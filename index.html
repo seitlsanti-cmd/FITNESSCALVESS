@@ -1,0 +1,1670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi entreno</title>
+
+  <!-- =====================================================
+       PARTE 2: CSS (LA ROPA)
+       ===================================================== -->
+  <style>
+    /* Colores de la app, con nombre, para usarlos en todas partes */
+    :root {
+      --fondo: #f2f2f2;
+      --tarjeta: #ffffff;
+      --texto: #1c1c1c;
+      --gris: #6b6b6b;
+      --borde: #e0e0e0;
+      --verde: #2e7d32;
+      --rojo: #c62828;
+      --naranja: #e67e00;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, Arial, sans-serif;
+      background: var(--fondo);
+      color: var(--texto);
+      padding-bottom: 80px;            /* hueco para la barra de abajo */
+    }
+
+    .contenedor { max-width: 600px; margin: 0 auto; padding: 16px; }
+
+    h1 { font-size: 24px; margin: 8px 0 4px; }
+    h2 { font-size: 18px; margin: 0 0 8px; }
+    .gris { color: var(--gris); font-size: 14px; }
+
+    .tarjeta {
+      background: var(--tarjeta);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    label { display: block; font-size: 14px; color: var(--gris); margin: 12px 0 4px; }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;                 /* 16px evita que el iPad haga zoom */
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      background: white;
+    }
+
+    button {
+      font-size: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--borde);
+      background: white;
+      cursor: pointer;
+    }
+    .boton-principal { width: 100%; background: var(--verde); color: white; border: none; margin-top: 16px; }
+    .aviso { color: var(--rojo); font-size: 14px; min-height: 18px; margin: 8px 0 0; }
+
+    /* --- Barra de navegación de abajo --- */
+    nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      display: flex;
+      background: white;
+      border-top: 1px solid var(--borde);
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    nav button {
+      flex: 1;
+      border: none;
+      border-radius: 0;
+      font-size: 12px;
+      padding: 10px 2px;
+      color: var(--gris);
+      background: white;
+    }
+    nav button .icono { display: block; font-size: 20px; }
+    nav button.activo { color: var(--verde); font-weight: bold; }
+
+    /* --- Pantalla Rutina --- */
+    .cabecera-dia { display: flex; justify-content: space-between; align-items: center; }
+    .interruptor button { padding: 6px 12px; font-size: 14px; }
+    .interruptor button.elegido { background: var(--verde); color: white; border-color: var(--verde); }
+    .interruptor button.elegido.descanso { background: var(--gris); border-color: var(--gris); }
+
+    .fila-ejercicio {
+      display: grid;
+      grid-template-columns: 1fr 56px 56px 36px;
+      gap: 6px;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--borde);
+      font-size: 15px;
+    }
+    .fila-ejercicio input { padding: 6px; text-align: center; }
+    .fila-ejercicio .quitar { padding: 6px; color: var(--rojo); }
+    .titulos-columnas { font-size: 12px; color: var(--gris); border-bottom: none; padding-bottom: 0; }
+
+    .zona-anadir { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+    .zona-anadir button { grid-column: span 2; }
+
+    /* --- Historial y Estadísticas --- */
+    .titulo-mes { font-size: 14px; color: var(--gris); text-transform: capitalize; margin: 18px 0 6px; }
+    .fila-historial {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 100%; text-align: left; margin-bottom: 6px; background: white;
+    }
+    .fila-historial small { display: block; color: var(--gris); font-size: 13px; }
+    .selector { display: flex; gap: 6px; margin-bottom: 10px; }
+    .selector button { flex: 1; padding: 8px; font-size: 14px; }
+    .selector button.elegido { background: var(--verde); color: white; border-color: var(--verde); }
+    .navegar-periodo { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .navegar-periodo button { padding: 6px 14px; }
+    .navegar-periodo strong { text-transform: capitalize; }
+    .cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .cifra { background: var(--fondo); border-radius: 8px; padding: 10px; }
+    .cifra span { display: block; font-size: 12px; color: var(--gris); }
+    .cifra strong { font-size: 20px; }
+    .equivalencia { margin: 10px 0 0; font-size: 15px; color: var(--verde); }
+    .aviso-semanal { border: 2px solid #a5d6a7; }
+    .banner {
+      background: #e6f4e7; border-radius: 12px; padding: 12px 40px 12px 14px;
+      margin-bottom: 12px; position: relative; font-size: 15px;
+    }
+    .banner .cerrar { position: absolute; top: 6px; right: 6px; padding: 4px 10px; border: none; background: none; font-size: 16px; }
+    svg text { font-family: -apple-system, Arial, sans-serif; }
+    /* --- Pantalla Hoy --- */
+    .cronometro {
+      font-size: 44px;
+      font-weight: bold;
+      text-align: center;
+      font-variant-numeric: tabular-nums;   /* los números no "bailan" */
+      margin: 20px 0 4px;
+      color: var(--gris);
+    }
+    .cronometro.en-marcha { color: var(--verde); }
+    .cabecera-sesion {
+      position: sticky; top: 0; z-index: 5;
+      background: var(--fondo);
+      padding: 4px 0 8px;
+      text-align: center;
+    }
+    .cabecera-sesion .cronometro { margin: 0; font-size: 36px; }
+    .marcador { font-size: 15px; color: var(--gris); }
+    .serie {
+      display: grid;
+      grid-template-columns: 58px 1fr 1fr 48px;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 6px;
+      border-radius: 8px;
+      margin-bottom: 4px;
+    }
+    .serie.hecha { background: #e6f4e7; }
+    .casilla { margin: 0; display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--gris); }
+    .casilla input { padding: 8px 4px; text-align: center; }
+    .check { padding: 8px 0; font-size: 18px; color: var(--gris); }
+    .serie.hecha .check { background: var(--verde); color: white; border-color: var(--verde); }
+    .boton-pequeno { padding: 8px 12px; font-size: 14px; margin-top: 6px; }
+    .motivacion {
+      font-size: 17px;
+      font-style: italic;
+      color: var(--verde);
+      margin: 0 0 12px;
+    }
+    .boton-principal.finalizar { background: var(--rojo); }
+    .linea-hoy { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--borde); }
+  </style>
+</head>
+
+<body>
+  <!-- =====================================================
+       PARTE 1: HTML (EL ESQUELETO)
+       Casi todo lo dibuja el JavaScript, así que aquí solo
+       hay dos "huecos": la pantalla y la barra de abajo.
+       ===================================================== -->
+  <div class="contenedor" id="pantalla"></div>
+
+  <nav id="barra" hidden>
+    <button data-pantalla="hoy"><span class="icono">🏠</span>Hoy</button>
+    <button data-pantalla="rutina"><span class="icono">📅</span>Rutina</button>
+    <button data-pantalla="estadisticas"><span class="icono">📊</span>Estadísticas</button>
+    <button data-pantalla="historial"><span class="icono">🕘</span>Historial</button>
+    <button data-pantalla="copias"><span class="icono">☁️</span>Copias</button>
+  </nav>
+
+  <!-- =====================================================
+       PARTE 3: JAVASCRIPT (EL CEREBRO)
+       ===================================================== -->
+  <script>
+    // -----------------------------------------------------
+    // 1. EL CATÁLOGO DE EJERCICIOS
+    // -----------------------------------------------------
+    const CATALOGO = {
+      "Pecho": ["Press de banca plano con barra", "Press inclinado con barra", "Press plano con mancuernas", "Press inclinado con mancuernas", "Press de pecho en máquina", "Press inclinado en máquina", "Press en Smith", "Contractor (pec deck)", "Cruce de poleas", "Fondos en paralelas"],
+      "Espalda": ["Dominadas", "Dominadas asistidas en máquina", "Jalón al pecho", "Jalón con triángulo", "Remo con barra", "Remo con mancuerna a una mano", "Remo sentado en polea baja", "Remo en máquina", "Remo en barra T", "Pullover en polea alta"],
+      "Hombros": ["Press militar con barra", "Press con mancuernas sentado", "Press de hombro en máquina", "Press Arnold", "Elevaciones laterales con mancuernas", "Elevaciones laterales en polea", "Elevaciones frontales", "Pájaros con mancuernas", "Pájaros en máquina", "Face pull"],
+      "Bíceps": ["Curl con barra recta", "Curl con barra Z", "Curl con mancuernas", "Curl martillo", "Curl inclinado con mancuernas", "Curl concentrado", "Curl Scott", "Curl en máquina", "Curl en polea baja", "Curl con cuerda en polea"],
+      "Tríceps": ["Extensión en polea con cuerda", "Extensión en polea con barra", "Extensión sobre la cabeza en polea", "Extensión sobre la cabeza con mancuerna", "Press francés", "Press de banca agarre cerrado", "Fondos en paralelas", "Fondos en banco", "Extensión en máquina", "Patada de tríceps"],
+      "Antebrazos": ["Curl de muñeca con barra", "Curl de muñeca con mancuerna", "Curl de muñeca inverso", "Curl inverso con barra", "Curl inverso en polea", "Paseo del granjero", "Colgarse de la barra", "Rodillo de muñeca", "Pinza de discos", "Hand gripper"],
+      "Abdomen y core": ["Plancha frontal", "Plancha lateral", "Crunch", "Crunch en máquina", "Crunch en polea alta", "Elevación de piernas en silla romana", "Elevación de piernas colgado", "Rueda abdominal", "Russian twist", "Leñador en polea"],
+      "Cuádriceps": ["Sentadilla con barra", "Sentadilla en Smith", "Hack squat", "Prensa de piernas", "Extensión de cuádriceps", "Sentadilla goblet", "Sentadilla búlgara", "Zancadas", "Step-up", "Sentadilla frontal"],
+      "Isquiotibiales": ["Curl femoral tumbado", "Curl femoral sentado", "Curl femoral de pie", "Peso muerto rumano con barra", "Peso muerto rumano con mancuernas", "Peso muerto piernas rígidas", "Buenos días", "Curl nórdico", "Hiperextensiones", "Kettlebell swing"],
+      "Glúteos": ["Hip thrust con barra", "Hip thrust en máquina", "Puente de glúteo", "Patada de glúteo en polea", "Patada de glúteo en máquina", "Abducción de cadera en máquina", "Sentadilla sumo", "Peso muerto sumo", "Zancada inversa", "Pull-through en polea"],
+      "Gemelos": ["Elevación de talones de pie en máquina", "Elevación sentado en máquina", "Elevación en prensa", "Elevación en Smith", "Elevación con mancuernas", "Elevación unilateral", "Elevación tipo burro", "Elevación en escalón", "Elevación en hack squat", "Saltos a la comba"]
+    };
+
+    // Ejercicios con reglas especiales (los demás son "normales":
+    // repeticiones × kilos). Aquí ya dejamos preparadas las reglas
+    // que usaremos para calcular los kilos en la siguiente pieza.
+    const ESPECIALES = {
+      "Dominadas":                       { tipo: "corporal", porcentaje: 100 },
+      "Fondos en paralelas":             { tipo: "corporal", porcentaje: 100 },
+      "Fondos en banco":                 { tipo: "corporal", porcentaje: 50 },
+      "Dominadas asistidas en máquina":  { tipo: "asistida" },
+      "Plancha frontal":                 { tipo: "tiempo" },
+      "Plancha lateral":                 { tipo: "tiempo" },
+      "Colgarse de la barra":            { tipo: "tiempo" },
+      "Paseo del granjero":              { tipo: "granjero" },
+      "Hand gripper":                    { tipo: "soloRepeticiones" },
+      "Saltos a la comba":               { tipo: "soloRepeticiones" }
+    };
+
+    function tipoDe(nombreEjercicio) {
+      return ESPECIALES[nombreEjercicio] || { tipo: "normal" };
+    }
+
+    // ¿Este ejercicio se mide en segundos en vez de repeticiones?
+    function esDeTiempo(nombreEjercicio) {
+      const t = tipoDe(nombreEjercicio).tipo;
+      return t === "tiempo" || t === "granjero";
+    }
+
+    // Los 10 ejercicios de cardio (solo se apunta el tiempo)
+    const CARDIO = ["Correr (aire libre)", "Cinta de correr", "Bicicleta (aire libre)", "Bici estática / spinning", "Elíptica", "Remo (máquina)", "Natación", "Saltar a la comba", "Escaladora", "Caminar rápido / cinta inclinada"];
+
+    const DIAS = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+    const NOMBRES_DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
+    // -----------------------------------------------------
+    // 2. LOS DATOS Y LA LIBRETA (localStorage)
+    // Todo se guarda en una sola "ficha grande" llamada datos.
+    // Así luego la copia de seguridad será un único archivo.
+    // -----------------------------------------------------
+    const CLAVE = "miEntreno";
+
+    function datosNuevos() {
+      const rutina = {};
+      for (const dia of DIAS) {
+        rutina[dia] = { descanso: true, nombre: "", ejercicios: [] };
+      }
+      return {
+        version: 1,
+        perfil: null,          // { nombre, edad, peso }
+        pesos: [],             // historial de peso: [{ fecha, kg }]
+        rutina: rutina,
+        entrenamientos: [],    // cada entrenamiento terminado
+        sesionActual: null     // el entrenamiento en marcha (si lo hay)
+      };
+    }
+
+    function cargar() {
+      try {
+        const texto = localStorage.getItem(CLAVE);
+        if (texto) return JSON.parse(texto);
+      } catch (error) { /* si falla, empezamos de cero */ }
+      return datosNuevos();
+    }
+
+    function guardar() {
+      try {
+        localStorage.setItem(CLAVE, JSON.stringify(datos));
+      } catch (error) {
+        alert("Este navegador no deja guardar datos.");
+      }
+    }
+
+    let datos = cargar();
+
+    // -----------------------------------------------------
+    // 3. HERRAMIENTAS PEQUEÑAS
+    // -----------------------------------------------------
+
+    // Crea un elemento HTML: crear("p", "gris", "Hola") → <p class="gris">Hola</p>
+    // (Usamos textContent para que los textos que escribe el
+    //  usuario nunca se interpreten como código.)
+    function crear(etiqueta, clase, texto) {
+      const elemento = document.createElement(etiqueta);
+      if (clase) elemento.className = clase;
+      if (texto !== undefined) elemento.textContent = texto;
+      return elemento;
+    }
+
+    function fechaHoyTexto() {
+      return new Date().toISOString().slice(0, 10);   // "2026-11-16"
+    }
+
+    // Lunes = 0, ..., domingo = 6
+    function indiceDiaHoy() {
+      return (new Date().getDay() + 6) % 7;
+    }
+
+    const pantalla = document.getElementById("pantalla");
+
+    // -----------------------------------------------------
+    // 4. PANTALLA DE BIENVENIDA (solo la primera vez)
+    // -----------------------------------------------------
+    function mostrarBienvenida() {
+      document.getElementById("barra").hidden = true;
+      pantalla.innerHTML = `
+        <h1>¡Bienvenido!</h1>
+        <p class="gris">Antes de empezar, cuéntanos un poco sobre ti. Estos datos se quedan solo en este dispositivo.</p>
+        <div class="tarjeta">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" placeholder="Santi">
+          <label for="edad">Edad</label>
+          <input id="edad" type="number" inputmode="numeric" placeholder="21">
+          <label for="peso">Peso (kg)</label>
+          <input id="peso" type="number" inputmode="decimal" step="0.1" placeholder="75">
+          <p class="aviso" id="avisoBienvenida"></p>
+          <button class="boton-principal" id="botonEmpezar">Empezar</button>
+        </div>`;
+
+      document.getElementById("botonEmpezar").addEventListener("click", function () {
+        const nombre = document.getElementById("nombre").value.trim();
+        const edad = parseInt(document.getElementById("edad").value);
+        const peso = parseFloat(document.getElementById("peso").value);
+        const aviso = document.getElementById("avisoBienvenida");
+
+        // Comprobamos que todo tenga sentido antes de guardar
+        if (nombre === "") { aviso.textContent = "Escribe tu nombre"; return; }
+        if (isNaN(edad) || edad < 10 || edad > 100) { aviso.textContent = "Escribe una edad entre 10 y 100"; return; }
+        if (isNaN(peso) || peso < 30 || peso > 300) { aviso.textContent = "Escribe un peso entre 30 y 300 kg"; return; }
+
+        datos.perfil = { nombre: nombre, edad: edad, peso: peso };
+        datos.pesos.push({ fecha: fechaHoyTexto(), kg: peso });
+        guardar();
+        mostrarApp();
+      });
+    }
+
+    // -----------------------------------------------------
+    // 5. NAVEGACIÓN ENTRE PANTALLAS
+    // -----------------------------------------------------
+    function mostrarApp() {
+      document.getElementById("barra").hidden = false;
+      ir("hoy");
+    }
+
+    function ir(nombrePantalla) {
+      // Marcamos en verde el botón de la pantalla actual
+      for (const boton of document.querySelectorAll("nav button")) {
+        boton.classList.toggle("activo", boton.dataset.pantalla === nombrePantalla);
+      }
+      window.scrollTo(0, 0);
+      clearInterval(relojCronometro);     // paramos el cronómetro de la pantalla anterior
+      if (nombrePantalla === "hoy") pantallaHoy();
+      else if (nombrePantalla === "rutina") pantallaRutina();
+      else if (nombrePantalla === "estadisticas") pantallaEstadisticas();
+      else if (nombrePantalla === "historial") pantallaHistorial();
+      else if (nombrePantalla === "copias") pantallaCopias();
+    }
+
+    for (const boton of document.querySelectorAll("nav button")) {
+      boton.addEventListener("click", function () { ir(boton.dataset.pantalla); });
+    }
+
+    function pantallaProximamente(titulo) {
+      pantalla.innerHTML = "";
+      pantalla.appendChild(crear("h1", "", titulo));
+      pantalla.appendChild(crear("p", "gris", "Esta pantalla llegará en una próxima pieza."));
+    }
+
+    // -----------------------------------------------------
+    // 6. PANTALLA HOY: rutina del día + cronómetro
+    // -----------------------------------------------------
+
+    // Guardamos el "reloj" que actualiza el cronómetro cada segundo,
+    // para poder pararlo cuando cambiamos de pantalla.
+    let relojCronometro = null;
+
+    // Convierte milisegundos en texto "01:05:09"
+    function formatoTiempo(milisegundos) {
+      const totalSegundos = Math.floor(milisegundos / 1000);
+      const h = Math.floor(totalSegundos / 3600);
+      const m = Math.floor((totalSegundos % 3600) / 60);
+      const s = totalSegundos % 60;
+      return [h, m, s].map(function (n) { return String(n).padStart(2, "0"); }).join(":");
+    }
+
+    // Frases motivadoras. {nombre} se cambia por el nombre de la persona.
+    const FRASES = [
+      "{nombre}, hoy es un buen día para superarte. ¡A por ello!",
+      "Vamos, {nombre}: cada serie cuenta.",
+      "{nombre}, la constancia gana a la motivación. Y tú estás aquí.",
+      "Hoy toca sudar, {nombre}. Tu yo del futuro te lo agradecerá.",
+      "{nombre}, no tiene que ser perfecto, tiene que estar hecho.",
+      "Un entrenamiento más, {nombre}. Así se construye el progreso.",
+      "{nombre}, el único mal entrenamiento es el que no se hace.",
+      "Dale caña, {nombre}. Hoy vas a mover muchos kilos.",
+      "{nombre}, poco a poco se llega lejos. ¡Empieza!",
+      "Fuerza, {nombre}. Lo difícil es empezar y ya estás aquí.",
+      "{nombre}, el cansancio pasa; el orgullo de haberlo hecho se queda.",
+      "Hoy no se negocia, {nombre}. Se entrena.",
+      "{nombre}, compite solo contra tu versión de ayer.",
+      "Cada repetición te acerca a tu objetivo, {nombre}.",
+      "{nombre}, la disciplina es hacerlo aunque no apetezca.",
+      "Respira, concéntrate y a por la primera serie, {nombre}.",
+      "{nombre}, los resultados llegan a quien no se rinde.",
+      "Hoy sumas kilos y sumas días, {nombre}. Sigue la racha.",
+      "{nombre}, tu cuerpo puede más de lo que tu mente cree.",
+      "Entrena hoy, {nombre}, para estar orgulloso mañana."
+    ];
+
+    // Elegimos UNA frase al azar cada vez que se abre la app.
+    // Math.random() da un número al azar entre 0 y 1; lo multiplicamos
+    // por el número de frases y lo redondeamos hacia abajo.
+    const numeroFraseDeHoy = Math.floor(Math.random() * FRASES.length);
+
+    function fraseMotivadora(nombre) {
+      return FRASES[numeroFraseDeHoy].replace("{nombre}", nombre);
+    }
+
+    // Escribe kilos bonitos: 2340.5 → "2.340,5"
+    function formatoKilos(kg) {
+      return kg.toLocaleString("es-ES", { maximumFractionDigits: 1 });
+    }
+
+    // Lee un número escrito por el usuario. Acepta coma o punto
+    // (el teclado del iPad en español pone coma: "62,5").
+    function leerNumero(texto) {
+      const n = parseFloat(String(texto).replace(",", "."));
+      return isNaN(n) ? 0 : n;
+    }
+
+    // -----------------------------------------------------
+    // CÁLCULO DE KILOS DE UNA SERIE (las reglas del diseño)
+    // -----------------------------------------------------
+    function kilosDeSerie(nombreEjercicio, serie, pesoCorporal) {
+      const regla = tipoDe(nombreEjercicio);
+      const reps = leerNumero(serie.reps);
+      const kg = leerNumero(serie.kg);
+      if (regla.tipo === "normal")   return reps * kg;
+      if (regla.tipo === "corporal") return reps * (pesoCorporal * regla.porcentaje / 100 + kg);  // kg = lastre
+      if (regla.tipo === "asistida") return reps * Math.max(0, pesoCorporal - kg);               // kg = ayuda
+      return 0;   // tiempo, granjero y soloRepeticiones no suman kilos
+    }
+
+    // Qué casillas tiene cada tipo de ejercicio
+    function etiquetasDe(nombreEjercicio) {
+      const t = tipoDe(nombreEjercicio).tipo;
+      if (t === "tiempo")           return { reps: "segundos", kg: null };
+      if (t === "granjero")         return { reps: "segundos", kg: "kg" };
+      if (t === "soloRepeticiones") return { reps: "reps", kg: null };
+      if (t === "corporal")         return { reps: "reps", kg: "lastre kg" };
+      if (t === "asistida")         return { reps: "reps", kg: "ayuda kg" };
+      return { reps: "reps", kg: "kg" };
+    }
+
+    // Busca los kilos de la última vez que se hizo un ejercicio
+    function ultimosKilos(nombreEjercicio) {
+      for (let i = datos.entrenamientos.length - 1; i >= 0; i--) {
+        const ejercicios = datos.entrenamientos[i].ejercicios || [];
+        for (const ej of ejercicios) {
+          if (ej.nombre === nombreEjercicio && ej.series.length > 0) {
+            return ej.series[ej.series.length - 1].kg;   // la última serie hecha
+          }
+        }
+      }
+      return "";   // nunca se ha hecho: casilla vacía
+    }
+
+    // Crea las series de un ejercicio al empezar
+    function seriesNuevas(nombre, cuantas, repeticiones) {
+      const lista = [];
+      for (let i = 0; i < cuantas; i++) {
+        lista.push({ reps: repeticiones, kg: ultimosKilos(nombre), hecha: false });
+      }
+      return lista;
+    }
+
+    // Suma los kilos de todas las series marcadas como hechas
+    function kilosDeSesion(sesion) {
+      let total = 0;
+      for (const ej of sesion.ejercicios) {
+        for (const serie of ej.series) {
+          if (serie.hecha) total += kilosDeSerie(ej.nombre, serie, datos.perfil.peso);
+        }
+      }
+      return total;
+    }
+
+    // -----------------------------------------------------
+    // PANTALLA HOY
+    // -----------------------------------------------------
+    function pantallaHoy() {
+      // Si hay un entrenamiento en marcha, enseñamos el entrenamiento
+      if (datos.sesionActual && datos.sesionActual.tipo === "cardio") {
+        pantallaCardioEnMarcha(); return;
+      }
+      if (datos.sesionActual) {
+        // (por si viene de una versión anterior de la app sin ejercicios)
+        if (!datos.sesionActual.ejercicios) datos.sesionActual.ejercicios = [];
+        if (!datos.sesionActual.nombre) datos.sesionActual.nombre = "Entrenamiento";
+        pantallaEntrenando(); return;
+      }
+
+      pantalla.innerHTML = "";
+      const indice = indiceDiaHoy();
+      const hoy = new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+      pantalla.appendChild(crear("p", "gris", hoy));
+      pantalla.appendChild(crear("h1", "", "Hola, " + datos.perfil.nombre));
+      mostrarAvisosDeResumen();   // "la semana pasada levantaste X coches..."
+      mostrarAvisosSemanales();   // actualizar peso y hacer copia
+
+      const dia = datos.rutina[DIAS[indice]];
+      const tarjeta = crear("div", "tarjeta");
+      pantalla.appendChild(tarjeta);
+      pantalla.appendChild(tarjetaSoloCardio());   // sale siempre, también en descanso
+
+      function botonIrARutina() {
+        const b = crear("button", "", "Ir a Rutina");
+        b.style.marginTop = "8px";
+        b.addEventListener("click", function () { ir("rutina"); });
+        return b;
+      }
+
+      // CASO 1: descanso
+      if (dia.descanso) {
+        tarjeta.appendChild(crear("h2", "", "Hoy te toca descansar 😴"));
+        tarjeta.appendChild(crear("p", "gris", "El " + NOMBRES_DIAS[indice].toLowerCase() + " está marcado como descanso en tu rutina."));
+        tarjeta.appendChild(botonIrARutina());
+        return;
+      }
+
+      // Toca entrenar: frase motivadora
+      pantalla.insertBefore(crear("p", "motivacion", fraseMotivadora(datos.perfil.nombre)), tarjeta);
+
+      tarjeta.appendChild(crear("p", "gris", "Rutina de hoy"));
+      tarjeta.appendChild(crear("h2", "", dia.nombre || "Entrenamiento"));
+
+      // CASO 2: sin ejercicios
+      if (dia.ejercicios.length === 0) {
+        tarjeta.appendChild(crear("p", "gris", "Aún no has añadido ejercicios para el " + NOMBRES_DIAS[indice].toLowerCase() + "."));
+        tarjeta.appendChild(botonIrARutina());
+        return;
+      }
+
+      // CASO 3: lista de ejercicios con los kilos de la última vez
+      for (const ej of dia.ejercicios) {
+        const linea = crear("div", "linea-hoy");
+        linea.appendChild(crear("span", "", ej.nombre));
+        let detalle = ej.series + " × " + ej.repeticiones + (esDeTiempo(ej.nombre) ? " s" : " reps");
+        const ultimos = ultimosKilos(ej.nombre);
+        if (ultimos !== "") {
+          const tipo = tipoDe(ej.nombre).tipo;
+          const kg = formatoKilos(leerNumero(ultimos));
+          if (tipo === "normal" || tipo === "granjero") detalle += " · " + kg + " kg";
+          if (tipo === "corporal" && leerNumero(ultimos) > 0) detalle += " · +" + kg + " kg lastre";
+          if (tipo === "asistida") detalle += " · ayuda " + kg + " kg";
+        }
+        linea.appendChild(crear("span", "gris", detalle));
+        tarjeta.appendChild(linea);
+      }
+
+      const botonEmpezar = crear("button", "boton-principal", "▶ Empezar entrenamiento");
+      botonEmpezar.addEventListener("click", function () {
+        // EMPEZAR: creamos la sesión a partir de la rutina del día
+        datos.sesionActual = {
+          tipo: "fuerza",
+          inicio: Date.now(),
+          nombre: dia.nombre || "Entrenamiento",
+          cardio: [],
+          ejercicios: dia.ejercicios.map(function (ej) {
+            return { nombre: ej.nombre, extra: false, series: seriesNuevas(ej.nombre, ej.series, ej.repeticiones) };
+          })
+        };
+        guardar();
+        pantallaEntrenando();
+      });
+      tarjeta.appendChild(botonEmpezar);
+    }
+
+    // -----------------------------------------------------
+    // PANTALLA DURANTE EL ENTRENAMIENTO
+    // -----------------------------------------------------
+    function pantallaEntrenando() {
+      const sesion = datos.sesionActual;
+      const posicionScroll = window.scrollY;   // para no saltar arriba al redibujar
+      pantalla.innerHTML = "";
+
+      // Cabecera fija arriba: cronómetro + kilos acumulados
+      const cabecera = crear("div", "cabecera-sesion");
+      const cronometro = crear("div", "cronometro en-marcha", formatoTiempo(Date.now() - sesion.inicio));
+      const marcador = crear("div", "marcador", "");
+      cabecera.appendChild(cronometro);
+      cabecera.appendChild(marcador);
+      pantalla.appendChild(cabecera);
+
+      function actualizarMarcador() {
+        marcador.textContent = formatoKilos(kilosDeSesion(sesion)) + " kg movidos";
+      }
+      actualizarMarcador();
+
+      clearInterval(relojCronometro);
+      relojCronometro = setInterval(function () {
+        cronometro.textContent = formatoTiempo(Date.now() - sesion.inicio);
+      }, 1000);
+
+      pantalla.appendChild(crear("h1", "", sesion.nombre));
+
+      // Una tarjeta por ejercicio
+      sesion.ejercicios.forEach(function (ej) {
+        const tarjeta = crear("div", "tarjeta");
+        tarjeta.appendChild(crear("h2", "", (ej.extra ? "EXTRA: " : "") + ej.nombre));
+        const etiquetas = etiquetasDe(ej.nombre);
+
+        ej.series.forEach(function (serie, i) {
+          const fila = crear("div", "serie" + (serie.hecha ? " hecha" : ""));
+          fila.appendChild(crear("span", "gris", "Serie " + (i + 1)));
+
+          // Casilla de repeticiones (o segundos)
+          const cajaReps = crear("label", "casilla");
+          const inputReps = crear("input");
+          inputReps.inputMode = "numeric"; inputReps.value = serie.reps;
+          inputReps.addEventListener("input", function () {
+            serie.reps = inputReps.value; guardar(); actualizarMarcador();
+          });
+          cajaReps.appendChild(inputReps);
+          cajaReps.appendChild(crear("span", "", etiquetas.reps));
+          fila.appendChild(cajaReps);
+
+          // Casilla de kilos (si el ejercicio la tiene)
+          if (etiquetas.kg) {
+            const cajaKg = crear("label", "casilla");
+            const inputKg = crear("input");
+            inputKg.inputMode = "decimal"; inputKg.value = serie.kg;
+            inputKg.placeholder = "0";
+            inputKg.addEventListener("input", function () {
+              serie.kg = inputKg.value; guardar(); actualizarMarcador();
+            });
+            cajaKg.appendChild(inputKg);
+            cajaKg.appendChild(crear("span", "", etiquetas.kg));
+            fila.appendChild(cajaKg);
+          } else {
+            fila.appendChild(crear("span", ""));
+          }
+
+          // Botón ✓ para marcar la serie como hecha
+          const check = crear("button", "check", "✓");
+          check.setAttribute("aria-label", "Marcar serie " + (i + 1) + " como hecha");
+          check.addEventListener("click", function () {
+            serie.hecha = !serie.hecha;
+            fila.classList.toggle("hecha", serie.hecha);
+            guardar(); actualizarMarcador();
+          });
+          fila.appendChild(check);
+          tarjeta.appendChild(fila);
+        });
+
+        // Botón para añadir otra serie (copia la última)
+        const masSerie = crear("button", "boton-pequeno", "+ Serie");
+        masSerie.addEventListener("click", function () {
+          const ultima = ej.series[ej.series.length - 1] || { reps: 10, kg: ultimosKilos(ej.nombre) };
+          ej.series.push({ reps: ultima.reps, kg: ultima.kg, hecha: false });
+          guardar(); pantallaEntrenando();
+        });
+        tarjeta.appendChild(masSerie);
+        pantalla.appendChild(tarjeta);
+      });
+
+      // Cardio dentro del entrenamiento (solo minutos)
+      if (!sesion.cardio) sesion.cardio = [];
+      const tarjetaCardio = crear("div", "tarjeta");
+      tarjetaCardio.appendChild(crear("h2", "", "Cardio"));
+      sesion.cardio.forEach(function (c, posicion) {
+        const linea = crear("div", "linea-hoy");
+        linea.appendChild(crear("span", "", c.ejercicio));
+        const derecha = crear("span", "");
+        derecha.appendChild(crear("span", "gris", c.minutos + " min  "));
+        const quitar = crear("button", "boton-pequeno", "✕");
+        quitar.style.marginTop = "0";
+        quitar.setAttribute("aria-label", "Quitar " + c.ejercicio);
+        quitar.addEventListener("click", function () {
+          sesion.cardio.splice(posicion, 1); guardar(); pantallaEntrenando();
+        });
+        derecha.appendChild(quitar);
+        linea.appendChild(derecha);
+        tarjetaCardio.appendChild(linea);
+      });
+      const zonaCardio = crear("div", "zona-anadir");
+      const selectCardio = crear("select");
+      for (const c of CARDIO) selectCardio.appendChild(crear("option", "", c));
+      const inputMinutos = crear("input");
+      inputMinutos.inputMode = "numeric"; inputMinutos.placeholder = "Minutos";
+      const avisoCardio = crear("p", "aviso", "");
+      const botonCardio = crear("button", "", "+ Añadir cardio");
+      botonCardio.addEventListener("click", function () {
+        const minutos = Math.round(leerNumero(inputMinutos.value));
+        if (minutos <= 0) { avisoCardio.textContent = "Escribe los minutos"; return; }
+        sesion.cardio.push({ ejercicio: selectCardio.value, minutos: minutos });
+        guardar(); pantallaEntrenando();
+      });
+      zonaCardio.appendChild(selectCardio);
+      zonaCardio.appendChild(inputMinutos);
+      zonaCardio.appendChild(botonCardio);
+      tarjetaCardio.appendChild(zonaCardio);
+      tarjetaCardio.appendChild(avisoCardio);
+      pantalla.appendChild(tarjetaCardio);
+
+      // Añadir un ejercicio EXTRA del catálogo
+      const tarjetaExtra = crear("div", "tarjeta");
+      tarjetaExtra.appendChild(crear("h2", "", "Añadir ejercicio EXTRA"));
+      const zona = crear("div", "zona-anadir");
+      const selectGrupo = crear("select");
+      for (const grupo of Object.keys(CATALOGO)) selectGrupo.appendChild(crear("option", "", grupo));
+      const selectEjercicio = crear("select");
+      function rellenar() {
+        selectEjercicio.innerHTML = "";
+        for (const nombre of CATALOGO[selectGrupo.value]) selectEjercicio.appendChild(crear("option", "", nombre));
+      }
+      rellenar();
+      selectGrupo.addEventListener("change", rellenar);
+      const avisoExtra = crear("p", "aviso", "");
+      const botonExtra = crear("button", "", "+ EXTRA");
+      botonExtra.addEventListener("click", function () {
+        const nombre = selectEjercicio.value;
+        if (sesion.ejercicios.some(function (e) { return e.nombre === nombre; })) {
+          avisoExtra.textContent = nombre + " ya está en el entrenamiento"; return;
+        }
+        sesion.ejercicios.push({ nombre: nombre, extra: true, series: seriesNuevas(nombre, 3, esDeTiempo(nombre) ? 30 : 10) });
+        guardar(); pantallaEntrenando();
+      });
+      zona.appendChild(selectGrupo);
+      zona.appendChild(selectEjercicio);
+      zona.appendChild(botonExtra);
+      tarjetaExtra.appendChild(zona);
+      tarjetaExtra.appendChild(avisoExtra);
+      pantalla.appendChild(tarjetaExtra);
+
+      // Botón Finalizar (hay que pulsarlo dos veces, para no terminar sin querer)
+      const botonFin = crear("button", "boton-principal finalizar", "■ Finalizar entrenamiento");
+      const avisoFin = crear("p", "gris", "");
+      let pendienteConfirmar = false;
+      botonFin.addEventListener("click", function () {
+        if (!pendienteConfirmar) {
+          pendienteConfirmar = true;
+          const hechas = sesion.ejercicios.reduce(function (n, e) { return n + e.series.filter(function (s) { return s.hecha; }).length; }, 0);
+          avisoFin.textContent = hechas === 0
+            ? "No has marcado ninguna serie. Pulsa otra vez para finalizar igualmente."
+            : "Pulsa otra vez para confirmar.";
+          botonFin.textContent = "Sí, finalizar";
+          setTimeout(function () {
+            pendienteConfirmar = false;
+            botonFin.textContent = "■ Finalizar entrenamiento";
+            avisoFin.textContent = "";
+          }, 4000);
+          return;
+        }
+        finalizarEntrenamiento();
+      });
+      pantalla.appendChild(botonFin);
+      pantalla.appendChild(avisoFin);
+
+      window.scrollTo(0, posicionScroll);
+    }
+
+    function finalizarEntrenamiento() {
+      const sesion = datos.sesionActual;
+      const fin = Date.now();
+      const kilos = kilosDeSesion(sesion);
+
+      // Guardamos solo las series marcadas como hechas
+      const ejercicios = [];
+      let seriesHechas = 0;
+      for (const ej of sesion.ejercicios) {
+        const hechas = ej.series.filter(function (s) { return s.hecha; })
+          .map(function (s) { return { reps: leerNumero(s.reps), kg: leerNumero(s.kg) }; });
+        seriesHechas += hechas.length;
+        if (hechas.length > 0) ejercicios.push({ nombre: ej.nombre, extra: ej.extra, series: hechas });
+      }
+
+      datos.entrenamientos.push({
+        fecha: fechaHoyTexto(),
+        nombre: sesion.nombre,
+        inicio: sesion.inicio,
+        fin: fin,
+        duracionMs: fin - sesion.inicio,
+        pesoCorporal: datos.perfil.peso,
+        tipo: "fuerza",
+        kilos: kilos,
+        ejercicios: ejercicios,
+        cardio: sesion.cardio || []   // minutos ya incluidos en duracionMs
+      });
+      datos.sesionActual = null;
+      guardar();
+      clearInterval(relojCronometro);
+
+      // Resumen
+      pantalla.innerHTML = "";
+      window.scrollTo(0, 0);
+      pantalla.appendChild(crear("h1", "", "¡Entrenamiento terminado! 💪"));
+      const tarjeta = crear("div", "tarjeta");
+      const resumen = [
+        ["Tiempo", formatoTiempo(fin - sesion.inicio)],
+        ["Kilos movidos", formatoKilos(kilos) + " kg"],
+        ["Series hechas", String(seriesHechas)],
+        ["Cardio", minutosDeCardio(sesion.cardio || []) + " min"]
+      ];
+      for (const par of resumen) {
+        const linea = crear("div", "linea-hoy");
+        linea.appendChild(crear("span", "", par[0]));
+        linea.appendChild(crear("strong", "", par[1]));
+        tarjeta.appendChild(linea);
+      }
+      pantalla.appendChild(tarjeta);
+      const volver = crear("button", "boton-principal", "Volver a Hoy");
+      volver.addEventListener("click", function () { ir("hoy"); });
+      pantalla.appendChild(volver);
+    }
+
+    // -----------------------------------------------------
+    // CARDIO
+    // -----------------------------------------------------
+    function minutosDeCardio(lista) {
+      return lista.reduce(function (total, c) { return total + c.minutos; }, 0);
+    }
+
+    // Tarjeta "Solo cardio" de la pantalla Hoy
+    function tarjetaSoloCardio() {
+      const tarjeta = crear("div", "tarjeta");
+      tarjeta.appendChild(crear("h2", "", "🏃 Solo cardio"));
+      tarjeta.appendChild(crear("p", "gris", "Una sesión de cardio con su propio cronómetro."));
+      const select = crear("select");
+      for (const c of CARDIO) select.appendChild(crear("option", "", c));
+      const boton = crear("button", "boton-principal", "▶ Empezar cardio");
+      boton.addEventListener("click", function () {
+        datos.sesionActual = { tipo: "cardio", inicio: Date.now(), ejercicio: select.value };
+        guardar();
+        pantallaCardioEnMarcha();
+      });
+      tarjeta.appendChild(select);
+      tarjeta.appendChild(boton);
+      return tarjeta;
+    }
+
+    // Pantalla mientras dura la sesión de cardio
+    function pantallaCardioEnMarcha() {
+      const sesion = datos.sesionActual;
+      pantalla.innerHTML = "";
+      window.scrollTo(0, 0);
+      pantalla.appendChild(crear("p", "gris", "Sesión de cardio"));
+      pantalla.appendChild(crear("h1", "", sesion.ejercicio));
+
+      const tarjeta = crear("div", "tarjeta");
+      const cronometro = crear("div", "cronometro en-marcha", formatoTiempo(Date.now() - sesion.inicio));
+      tarjeta.appendChild(cronometro);
+      clearInterval(relojCronometro);
+      relojCronometro = setInterval(function () {
+        cronometro.textContent = formatoTiempo(Date.now() - sesion.inicio);
+      }, 1000);
+
+      const botonFin = crear("button", "boton-principal finalizar", "■ Finalizar cardio");
+      const avisoFin = crear("p", "gris", "");
+      let pendienteConfirmar = false;
+      botonFin.addEventListener("click", function () {
+        if (!pendienteConfirmar) {
+          pendienteConfirmar = true;
+          botonFin.textContent = "Sí, finalizar";
+          avisoFin.textContent = "Pulsa otra vez para confirmar.";
+          setTimeout(function () {
+            pendienteConfirmar = false;
+            botonFin.textContent = "■ Finalizar cardio";
+            avisoFin.textContent = "";
+          }, 4000);
+          return;
+        }
+        // Guardamos la sesión de cardio: su tiempo SÍ suma al total
+        const fin = Date.now();
+        const duracion = fin - sesion.inicio;
+        const minutos = Math.round(duracion / 60000);
+        datos.entrenamientos.push({
+          tipo: "cardio",
+          fecha: fechaHoyTexto(),
+          nombre: "Cardio: " + sesion.ejercicio,
+          inicio: sesion.inicio,
+          fin: fin,
+          duracionMs: duracion,
+          pesoCorporal: datos.perfil.peso,
+          kilos: 0,
+          ejercicios: [],
+          cardio: [{ ejercicio: sesion.ejercicio, minutos: minutos }]
+        });
+        datos.sesionActual = null;
+        guardar();
+        clearInterval(relojCronometro);
+
+        pantalla.innerHTML = "";
+        pantalla.appendChild(crear("h1", "", "¡Cardio terminado! 🏃"));
+        const resumen = crear("div", "tarjeta");
+        for (const par of [["Ejercicio", sesion.ejercicio], ["Tiempo", formatoTiempo(duracion)]]) {
+          const linea = crear("div", "linea-hoy");
+          linea.appendChild(crear("span", "", par[0]));
+          linea.appendChild(crear("strong", "", par[1]));
+          resumen.appendChild(linea);
+        }
+        pantalla.appendChild(resumen);
+        const volver = crear("button", "boton-principal", "Volver a Hoy");
+        volver.addEventListener("click", function () { ir("hoy"); });
+        pantalla.appendChild(volver);
+      });
+      tarjeta.appendChild(botonFin);
+      tarjeta.appendChild(avisoFin);
+      pantalla.appendChild(tarjeta);
+    }
+
+    // -----------------------------------------------------
+    // FECHAS: semanas y meses
+    // -----------------------------------------------------
+
+    // Lunes a las 00:00 de la semana de una fecha
+    function inicioDeSemana(fecha) {
+      const d = new Date(fecha);
+      d.setHours(0, 0, 0, 0);
+      d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+      return d;
+    }
+
+    // Texto "2026-11-16" de una fecha (en hora local)
+    function claveDia(fecha) {
+      const d = new Date(fecha);
+      return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    }
+
+    // Devuelve el periodo: desde, hasta y su nombre.
+    // desplazamiento 0 = el actual, -1 = el anterior, -2 = el de antes...
+    function periodo(tipo, desplazamiento) {
+      const hoy = new Date();
+      let desde, hasta, nombre;
+      if (tipo === "semana") {
+        desde = inicioDeSemana(hoy);
+        desde.setDate(desde.getDate() + 7 * desplazamiento);
+        hasta = new Date(desde); hasta.setDate(hasta.getDate() + 7);
+        const ultimo = new Date(hasta); ultimo.setDate(ultimo.getDate() - 1);
+        const corto = { day: "numeric", month: "short" };
+        nombre = desde.toLocaleDateString("es-ES", corto) + " – " + ultimo.toLocaleDateString("es-ES", corto);
+      } else if (tipo === "mes") {
+        desde = new Date(hoy.getFullYear(), hoy.getMonth() + desplazamiento, 1);
+        hasta = new Date(desde.getFullYear(), desde.getMonth() + 1, 1);
+        nombre = desde.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+      } else {
+        desde = new Date(hoy.getFullYear() + desplazamiento, 0, 1);
+        hasta = new Date(desde.getFullYear() + 1, 0, 1);
+        nombre = String(desde.getFullYear());
+      }
+      return { desde: desde, hasta: hasta, nombre: nombre };
+    }
+
+    function entrenamientosEntre(desde, hasta) {
+      return datos.entrenamientos.filter(function (e) {
+        return e.inicio >= desde.getTime() && e.inicio < hasta.getTime();
+      });
+    }
+
+    // Suma las cifras de una lista de entrenamientos
+    function resumenDe(lista) {
+      const r = { kilos: 0, entrenamientos: lista.length, tiempoMs: 0, cardioMin: 0 };
+      for (const e of lista) {
+        r.kilos += e.kilos || 0;
+        r.tiempoMs += e.duracionMs || 0;
+        r.cardioMin += minutosDeCardio(e.cardio || []);
+      }
+      return r;
+    }
+
+    // "3 h 40 min"
+    function formatoDuracion(ms) {
+      const minutos = Math.round(ms / 60000);
+      const h = Math.floor(minutos / 60);
+      const m = minutos % 60;
+      return h > 0 ? h + " h " + m + " min" : m + " min";
+    }
+
+    // -----------------------------------------------------
+    // EQUIVALENCIAS: coches por semana, veleros por mes y año
+    // -----------------------------------------------------
+    const PESO_COCHE = 1500;    // kg, un turismo mediano
+    const PESO_VELERO = 4500;   // kg, un velero de unos 10 metros
+
+    function textoEquivalencia(kilos, tipo) {
+      if (kilos <= 0) return "";
+      const esSemana = tipo === "semana";
+      const cuantos = kilos / (esSemana ? PESO_COCHE : PESO_VELERO);
+      const singular = esSemana ? "coche" : "velero";
+      const icono = esSemana ? " 🚗" : " ⛵";
+      if (cuantos < 1) {
+        return "¡Ya llevas el " + Math.round(cuantos * 100) + " % de un " + singular + "!" + icono;
+      }
+      const numero = cuantos.toLocaleString("es-ES", { maximumFractionDigits: 1 });
+      return "¡Como levantar " + numero + " " + singular + (numero === "1" ? "" : "s") + "!" + icono;
+    }
+
+    // Avisos en Hoy al empezar una semana o un mes nuevos
+    function mostrarAvisosDeResumen() {
+      if (!datos.avisosVistos) datos.avisosVistos = { semana: "", mes: "" };
+      const claveSemana = claveDia(inicioDeSemana(new Date()));
+      const ahora = new Date();
+      const claveMes = ahora.getFullYear() + "-" + (ahora.getMonth() + 1);
+
+      const avisos = [
+        { tipo: "mes", clave: claveMes, p: periodo("mes", -1), texto: "En " },
+        { tipo: "semana", clave: claveSemana, p: periodo("semana", -1), texto: "La semana pasada " }
+      ];
+      for (const a of avisos) {
+        if (datos.avisosVistos[a.tipo] === a.clave) continue;       // ya lo has visto
+        const kilos = resumenDe(entrenamientosEntre(a.p.desde, a.p.hasta)).kilos;
+        if (kilos <= 0) continue;                                    // no hay nada que contar
+        const inicioTexto = a.tipo === "mes" ? "En " + a.p.nombre.split(" ")[0] + " " : a.texto;
+        const banner = crear("div", "banner",
+          inicioTexto + "levantaste " + formatoKilos(kilos) + " kg. " + textoEquivalencia(kilos, a.tipo));
+        const cerrar = crear("button", "cerrar", "✕");
+        cerrar.setAttribute("aria-label", "Cerrar aviso");
+        cerrar.addEventListener("click", function () {
+          datos.avisosVistos[a.tipo] = a.clave; guardar(); banner.remove();
+        });
+        banner.appendChild(cerrar);
+        pantalla.appendChild(banner);
+      }
+    }
+
+    // -----------------------------------------------------
+    // RACHA: semanas seguidas con al menos 1 entrenamiento
+    // -----------------------------------------------------
+    function calcularRacha() {
+      const semanas = new Set(datos.entrenamientos.map(function (e) { return claveDia(inicioDeSemana(e.inicio)); }));
+
+      // Racha actual: si esta semana aún no has entrenado, la racha
+      // sigue viva (la semana no ha terminado), así que empezamos a
+      // contar desde la semana pasada.
+      let lunes = inicioDeSemana(new Date());
+      if (!semanas.has(claveDia(lunes))) lunes.setDate(lunes.getDate() - 7);
+      let actual = 0;
+      while (semanas.has(claveDia(lunes))) { actual++; lunes.setDate(lunes.getDate() - 7); }
+
+      // Mejor racha: recorremos todas las semanas en orden
+      const ordenadas = Array.from(semanas).sort();
+      let mejor = 0, seguidas = 0, anterior = null;
+      for (const clave of ordenadas) {
+        const esteLunes = new Date(clave + "T00:00:00");
+        if (anterior) {
+          const esperado = new Date(anterior); esperado.setDate(esperado.getDate() + 7);
+          seguidas = claveDia(esperado) === clave ? seguidas + 1 : 1;
+        } else {
+          seguidas = 1;
+        }
+        mejor = Math.max(mejor, seguidas);
+        anterior = esteLunes;
+      }
+      return { actual: actual, mejor: mejor };
+    }
+
+    // -----------------------------------------------------
+    // PANTALLA HISTORIAL
+    // -----------------------------------------------------
+    function pantallaHistorial() {
+      pantalla.innerHTML = "";
+      pantalla.appendChild(crear("h1", "", "Historial"));
+
+      const lista = datos.entrenamientos.slice().sort(function (a, b) { return b.inicio - a.inicio; });
+      if (lista.length === 0) {
+        pantalla.appendChild(crear("p", "gris", "Todavía no has terminado ningún entrenamiento. Cuando lo hagas, aparecerá aquí."));
+        return;
+      }
+
+      let mesAnterior = "";
+      for (const e of lista) {
+        const fecha = new Date(e.inicio);
+        const mes = fecha.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+        if (mes !== mesAnterior) {          // nuevo mes → título
+          pantalla.appendChild(crear("p", "titulo-mes", mes));
+          mesAnterior = mes;
+        }
+        const fila = crear("button", "fila-historial");
+        const izquierda = crear("span", "");
+        izquierda.appendChild(crear("strong", "", e.nombre));
+        izquierda.appendChild(crear("small", "", fecha.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" }) + " · " + formatoDuracion(e.duracionMs || 0)));
+        fila.appendChild(izquierda);
+        const derecha = e.tipo === "cardio"
+          ? minutosDeCardio(e.cardio || []) + " min"
+          : formatoKilos(e.kilos || 0) + " kg";
+        fila.appendChild(crear("span", "gris", derecha + " ›"));
+        fila.addEventListener("click", function () { detalleEntrenamiento(e); });
+        pantalla.appendChild(fila);
+      }
+    }
+
+    function detalleEntrenamiento(e) {
+      pantalla.innerHTML = "";
+      window.scrollTo(0, 0);
+      const volver = crear("button", "boton-pequeno", "‹ Volver al historial");
+      volver.addEventListener("click", pantallaHistorial);
+      pantalla.appendChild(volver);
+
+      const fecha = new Date(e.inicio);
+      pantalla.appendChild(crear("h1", "", e.nombre));
+      pantalla.appendChild(crear("p", "gris",
+        fecha.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) +
+        " · " + fecha.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })));
+
+      const resumen = crear("div", "tarjeta");
+      const filas = [["Duración", formatoTiempo(e.duracionMs || 0)]];
+      if (e.tipo !== "cardio") filas.push(["Kilos movidos", formatoKilos(e.kilos || 0) + " kg"]);
+      filas.push(["Peso corporal ese día", formatoKilos(e.pesoCorporal || 0) + " kg"]);
+      for (const par of filas) {
+        const linea = crear("div", "linea-hoy");
+        linea.appendChild(crear("span", "", par[0]));
+        linea.appendChild(crear("strong", "", par[1]));
+        resumen.appendChild(linea);
+      }
+      pantalla.appendChild(resumen);
+
+      // Ejercicios con sus series
+      for (const ej of e.ejercicios || []) {
+        const tarjeta = crear("div", "tarjeta");
+        tarjeta.appendChild(crear("h2", "", (ej.extra ? "EXTRA: " : "") + ej.nombre));
+        const etiquetas = etiquetasDe(ej.nombre);
+        ej.series.forEach(function (serie, i) {
+          let texto = serie.reps + " " + etiquetas.reps;
+          const tipo = tipoDe(ej.nombre).tipo;
+          if (tipo === "corporal") { if (serie.kg > 0) texto += " · +" + formatoKilos(serie.kg) + " kg lastre"; }
+          else if (tipo === "asistida") texto += " · ayuda " + formatoKilos(serie.kg) + " kg";
+          else if (etiquetas.kg) texto += " · " + formatoKilos(serie.kg) + " kg";
+          const linea = crear("div", "linea-hoy");
+          linea.appendChild(crear("span", "gris", "Serie " + (i + 1)));
+          linea.appendChild(crear("span", "", texto));
+          tarjeta.appendChild(linea);
+        });
+        pantalla.appendChild(tarjeta);
+      }
+
+      // Cardio
+      if ((e.cardio || []).length > 0) {
+        const tarjeta = crear("div", "tarjeta");
+        tarjeta.appendChild(crear("h2", "", "Cardio"));
+        for (const c of e.cardio) {
+          const linea = crear("div", "linea-hoy");
+          linea.appendChild(crear("span", "", c.ejercicio));
+          linea.appendChild(crear("span", "", c.minutos + " min"));
+          tarjeta.appendChild(linea);
+        }
+        pantalla.appendChild(tarjeta);
+      }
+
+      // Borrar (doble pulsación)
+      const borrar = crear("button", "boton-principal finalizar", "Borrar entrenamiento");
+      const aviso = crear("p", "gris", "");
+      let pendiente = false;
+      borrar.addEventListener("click", function () {
+        if (!pendiente) {
+          pendiente = true;
+          borrar.textContent = "Sí, borrar para siempre";
+          aviso.textContent = "Pulsa otra vez para borrarlo. No se puede deshacer.";
+          setTimeout(function () { pendiente = false; borrar.textContent = "Borrar entrenamiento"; aviso.textContent = ""; }, 4000);
+          return;
+        }
+        datos.entrenamientos = datos.entrenamientos.filter(function (x) { return x !== e; });
+        guardar();
+        pantallaHistorial();
+      });
+      pantalla.appendChild(borrar);
+      pantalla.appendChild(aviso);
+    }
+
+    // -----------------------------------------------------
+    // PANTALLA ESTADÍSTICAS
+    // -----------------------------------------------------
+    let vista = { tipo: "semana", desplazamiento: 0 };   // qué periodo estás mirando
+
+    function pantallaEstadisticas() {
+      pantalla.innerHTML = "";
+      pantalla.appendChild(crear("h1", "", "Estadísticas"));
+
+      // --- Tarjeta del periodo ---
+      const tarjeta = crear("div", "tarjeta");
+      const selector = crear("div", "selector");
+      for (const opcion of [["semana", "Semana"], ["mes", "Mes"], ["año", "Año"]]) {
+        const b = crear("button", vista.tipo === opcion[0] ? "elegido" : "", opcion[1]);
+        b.addEventListener("click", function () { vista = { tipo: opcion[0], desplazamiento: 0 }; pantallaEstadisticas(); });
+        selector.appendChild(b);
+      }
+      tarjeta.appendChild(selector);
+
+      const p = periodo(vista.tipo, vista.desplazamiento);
+      const navegar = crear("div", "navegar-periodo");
+      const atras = crear("button", "", "◀");
+      atras.setAttribute("aria-label", "Periodo anterior");
+      atras.addEventListener("click", function () { vista.desplazamiento--; pantallaEstadisticas(); });
+      const adelante = crear("button", "", "▶");
+      adelante.setAttribute("aria-label", "Periodo siguiente");
+      adelante.addEventListener("click", function () {
+        if (vista.desplazamiento < 0) { vista.desplazamiento++; pantallaEstadisticas(); }
+      });
+      if (vista.desplazamiento === 0) adelante.style.visibility = "hidden";   // no hay futuro
+      navegar.appendChild(atras);
+      navegar.appendChild(crear("strong", "", p.nombre));
+      navegar.appendChild(adelante);
+      tarjeta.appendChild(navegar);
+
+      const r = resumenDe(entrenamientosEntre(p.desde, p.hasta));
+      const cifras = crear("div", "cifras");
+      for (const par of [
+        ["Kilos movidos", formatoKilos(r.kilos) + " kg"],
+        ["Entrenamientos", String(r.entrenamientos)],
+        ["Tiempo total", formatoDuracion(r.tiempoMs)],
+        ["Cardio", r.cardioMin + " min"]
+      ]) {
+        const c = crear("div", "cifra");
+        c.appendChild(crear("span", "", par[0]));
+        c.appendChild(crear("strong", "", par[1]));
+        cifras.appendChild(c);
+      }
+      tarjeta.appendChild(cifras);
+      const equivalencia = textoEquivalencia(r.kilos, vista.tipo);
+      if (equivalencia) tarjeta.appendChild(crear("p", "equivalencia", equivalencia));
+      pantalla.appendChild(tarjeta);
+
+      // --- Racha ---
+      const racha = calcularRacha();
+      const tarjetaRacha = crear("div", "tarjeta");
+      tarjetaRacha.appendChild(crear("h2", "", "🔥 Racha"));
+      const cifrasRacha = crear("div", "cifras");
+      for (const par of [["Racha actual", racha.actual], ["Mejor racha", racha.mejor]]) {
+        const c = crear("div", "cifra");
+        c.appendChild(crear("span", "", par[0]));
+        c.appendChild(crear("strong", "", par[1] + (par[1] === 1 ? " semana" : " semanas")));
+        cifrasRacha.appendChild(c);
+      }
+      tarjetaRacha.appendChild(cifrasRacha);
+      pantalla.appendChild(tarjetaRacha);
+
+      // --- Barras: kilos de las últimas 8 semanas ---
+      const tarjetaBarras = crear("div", "tarjeta");
+      tarjetaBarras.appendChild(crear("h2", "", "Kilos por semana"));
+      const semanas = [];
+      for (let i = -7; i <= 0; i++) {
+        const ps = periodo("semana", i);
+        semanas.push({ etiqueta: ps.desde.getDate() + "/" + (ps.desde.getMonth() + 1), kilos: resumenDe(entrenamientosEntre(ps.desde, ps.hasta)).kilos });
+      }
+      tarjetaBarras.appendChild(graficaBarras(semanas));
+      pantalla.appendChild(tarjetaBarras);
+
+      // --- Peso corporal ---
+      const tarjetaPeso = crear("div", "tarjeta");
+      tarjetaPeso.appendChild(crear("h2", "", "Peso corporal"));
+      tarjetaPeso.appendChild(graficaPeso(datos.pesos));
+      const zona = crear("div", "zona-anadir");
+      const inputPeso = crear("input");
+      inputPeso.inputMode = "decimal";
+      inputPeso.placeholder = "Peso de hoy (kg)";
+      const botonPeso = crear("button", "", "Actualizar peso");
+      botonPeso.style.gridColumn = "auto";
+      const avisoPeso = crear("p", "aviso", "");
+      botonPeso.addEventListener("click", function () {
+        const kg = leerNumero(inputPeso.value);
+        if (kg < 30 || kg > 300) { avisoPeso.textContent = "Escribe un peso entre 30 y 300 kg"; return; }
+        actualizarPeso(kg);
+        pantallaEstadisticas();
+      });
+      zona.appendChild(inputPeso);
+      zona.appendChild(botonPeso);
+      tarjetaPeso.appendChild(zona);
+      tarjetaPeso.appendChild(avisoPeso);
+      pantalla.appendChild(tarjetaPeso);
+    }
+
+    // Guarda un peso nuevo (si ya había uno de hoy, lo sustituye)
+    function actualizarPeso(kg) {
+      const hoy = fechaHoyTexto();
+      datos.pesos = datos.pesos.filter(function (p) { return p.fecha !== hoy; });
+      datos.pesos.push({ fecha: hoy, kg: kg });
+      datos.pesos.sort(function (a, b) { return a.fecha < b.fecha ? -1 : 1; });
+      datos.perfil.peso = kg;
+      guardar();
+    }
+
+    // -----------------------------------------------------
+    // GRÁFICAS (dibujadas a mano con SVG, sin internet)
+    // SVG es un "papel" donde dibujamos con coordenadas:
+    // x hacia la derecha, y hacia abajo.
+    // -----------------------------------------------------
+    const NS = "http://www.w3.org/2000/svg";
+    function svgElemento(etiqueta, atributos, texto) {
+      const el = document.createElementNS(NS, etiqueta);
+      for (const clave in atributos) el.setAttribute(clave, atributos[clave]);
+      if (texto !== undefined) el.textContent = texto;
+      return el;
+    }
+
+    function graficaBarras(semanas) {
+      const ancho = 320, alto = 170, abajo = 20, arriba = 18;
+      const svg = svgElemento("svg", { viewBox: "0 0 " + ancho + " " + alto, width: "100%", role: "img", "aria-label": "Kilos movidos en las últimas 8 semanas" });
+      const maximo = Math.max.apply(null, semanas.map(function (s) { return s.kilos; })) || 1;
+      const hueco = ancho / semanas.length;
+      semanas.forEach(function (s, i) {
+        const h = (alto - abajo - arriba) * s.kilos / maximo;
+        const x = i * hueco + 6;
+        const y = alto - abajo - h;
+        const esActual = i === semanas.length - 1;
+        svg.appendChild(svgElemento("rect", { x: x, y: y, width: hueco - 12, height: Math.max(h, 1), rx: 4, fill: esActual ? "#2e7d32" : "#a5d6a7" }));
+        if (s.kilos > 0) {
+          const texto = s.kilos >= 1000 ? (s.kilos / 1000).toLocaleString("es-ES", { maximumFractionDigits: 1 }) + "k" : String(Math.round(s.kilos));
+          svg.appendChild(svgElemento("text", { x: x + (hueco - 12) / 2, y: y - 4, "text-anchor": "middle", "font-size": 11, fill: "#1c1c1c" }, texto));
+        }
+        svg.appendChild(svgElemento("text", { x: x + (hueco - 12) / 2, y: alto - 5, "text-anchor": "middle", "font-size": 11, fill: "#6b6b6b" }, s.etiqueta));
+      });
+      return svg;
+    }
+
+    function graficaPeso(pesos) {
+      if (pesos.length < 2) {
+        const p = crear("p", "gris", pesos.length === 1
+          ? "Peso actual: " + formatoKilos(pesos[0].kg) + " kg. La gráfica aparecerá cuando tengas al menos 2 pesos apuntados."
+          : "Aún no hay pesos apuntados.");
+        return p;
+      }
+      const ancho = 320, alto = 170, izq = 34, der = 10, arriba = 12, abajo = 22;
+      const svg = svgElemento("svg", { viewBox: "0 0 " + ancho + " " + alto, width: "100%", role: "img", "aria-label": "Evolución del peso corporal" });
+      const valores = pesos.map(function (p) { return p.kg; });
+      let minimo = Math.min.apply(null, valores) - 1;
+      let maximo = Math.max.apply(null, valores) + 1;
+      const tiempos = pesos.map(function (p) { return new Date(p.fecha + "T00:00:00").getTime(); });
+      const t0 = tiempos[0], t1 = tiempos[tiempos.length - 1];
+
+      function px(t) { return izq + (ancho - izq - der) * (t1 === t0 ? 0.5 : (t - t0) / (t1 - t0)); }
+      function py(kg) { return arriba + (alto - arriba - abajo) * (1 - (kg - minimo) / (maximo - minimo)); }
+
+      // Líneas de referencia con su valor
+      for (const kg of [minimo, (minimo + maximo) / 2, maximo]) {
+        svg.appendChild(svgElemento("line", { x1: izq, x2: ancho - der, y1: py(kg), y2: py(kg), stroke: "#e0e0e0" }));
+        svg.appendChild(svgElemento("text", { x: izq - 4, y: py(kg) + 4, "text-anchor": "end", "font-size": 11, fill: "#6b6b6b" }, formatoKilos(Math.round(kg))));
+      }
+      // La línea del peso y sus puntos
+      const puntos = pesos.map(function (p, i) { return px(tiempos[i]) + "," + py(p.kg); }).join(" ");
+      svg.appendChild(svgElemento("polyline", { points: puntos, fill: "none", stroke: "#2e7d32", "stroke-width": 2.5 }));
+      pesos.forEach(function (p, i) {
+        svg.appendChild(svgElemento("circle", { cx: px(tiempos[i]), cy: py(p.kg), r: 3.5, fill: "#2e7d32" }));
+      });
+      // Fechas de inicio y fin
+      const corto = { day: "numeric", month: "short" };
+      svg.appendChild(svgElemento("text", { x: izq, y: alto - 5, "font-size": 11, fill: "#6b6b6b" }, new Date(t0).toLocaleDateString("es-ES", corto)));
+      svg.appendChild(svgElemento("text", { x: ancho - der, y: alto - 5, "text-anchor": "end", "font-size": 11, fill: "#6b6b6b" }, new Date(t1).toLocaleDateString("es-ES", corto)));
+      return svg;
+    }
+
+    // -----------------------------------------------------
+    // COPIAS DE SEGURIDAD
+    // -----------------------------------------------------
+    const UN_DIA = 86400000;
+
+    function diasDesde(momento) {
+      return Math.floor((Date.now() - momento) / UN_DIA);
+    }
+
+    // Crea el archivo de copia y lo comparte (iPad) o lo descarga
+    async function exportarCopia(mensaje) {
+      const nombre = "mi-entreno-copia-" + fechaHoyTexto() + ".json";
+      const texto = JSON.stringify(datos, null, 2);
+      const archivo = new Blob([texto], { type: "application/json" });
+      try {
+        const fichero = new File([archivo], nombre, { type: "application/json" });
+        if (navigator.canShare && navigator.canShare({ files: [fichero] })) {
+          // En iPad/iPhone: abre el menú de compartir → "Guardar en Archivos"
+          await navigator.share({ files: [fichero], title: "Copia de Mi entreno" });
+        } else {
+          // En ordenador: descarga el archivo
+          const enlace = document.createElement("a");
+          enlace.href = URL.createObjectURL(archivo);
+          enlace.download = nombre;
+          document.body.appendChild(enlace);
+          enlace.click();
+          enlace.remove();
+        }
+        datos.ultimaCopia = Date.now();
+        guardar();
+        mensaje.textContent = "Copia creada. Guárdala en Archivos o en iCloud Drive.";
+        return true;
+      } catch (error) {
+        if (error && error.name === "AbortError") {
+          mensaje.textContent = "Has cancelado la copia.";
+        } else {
+          mensaje.textContent = "No se ha podido crear la copia aquí. En la versión instalada desde GitHub funcionará.";
+        }
+        return false;
+      }
+    }
+
+    function pantallaCopias() {
+      pantalla.innerHTML = "";
+      pantalla.appendChild(crear("h1", "", "Copias de seguridad"));
+      pantalla.appendChild(crear("p", "gris", "Tus datos solo están en este dispositivo. Haz una copia de vez en cuando y guárdala en iCloud Drive para no perderlos nunca."));
+
+      // --- Exportar ---
+      const tarjetaExportar = crear("div", "tarjeta");
+      tarjetaExportar.appendChild(crear("h2", "", "Exportar copia"));
+      tarjetaExportar.appendChild(crear("p", "gris", datos.ultimaCopia
+        ? "Última copia: " + new Date(datos.ultimaCopia).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
+        : "Todavía no has hecho ninguna copia."));
+      const mensajeExportar = crear("p", "gris", "");
+      const botonExportar = crear("button", "boton-principal", "⬆ Exportar copia");
+      botonExportar.addEventListener("click", function () { exportarCopia(mensajeExportar); });
+      tarjetaExportar.appendChild(botonExportar);
+      tarjetaExportar.appendChild(mensajeExportar);
+      pantalla.appendChild(tarjetaExportar);
+
+      // --- Importar ---
+      const tarjetaImportar = crear("div", "tarjeta");
+      tarjetaImportar.appendChild(crear("h2", "", "Importar copia"));
+      tarjetaImportar.appendChild(crear("p", "gris", "Recupera tus datos desde un archivo de copia. Sustituye todo lo que hay ahora en la app."));
+      const selectorArchivo = crear("input");
+      selectorArchivo.type = "file";
+      selectorArchivo.accept = ".json,application/json";
+      const zonaResultado = crear("div", "");
+      tarjetaImportar.appendChild(selectorArchivo);
+      tarjetaImportar.appendChild(zonaResultado);
+      pantalla.appendChild(tarjetaImportar);
+
+      selectorArchivo.addEventListener("change", function () {
+        zonaResultado.innerHTML = "";
+        const archivo = selectorArchivo.files[0];
+        if (!archivo) return;
+        const lector = new FileReader();
+        lector.onload = function () {
+          let copia;
+          try { copia = JSON.parse(lector.result); } catch (e) { copia = null; }
+          // Comprobamos que sea de verdad una copia de esta app
+          if (!copia || !copia.perfil || !copia.rutina || !Array.isArray(copia.entrenamientos)) {
+            zonaResultado.appendChild(crear("p", "aviso", "Este archivo no es una copia de Mi entreno."));
+            return;
+          }
+          const fechaCopia = copia.ultimaCopia
+            ? new Date(copia.ultimaCopia).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })
+            : "fecha desconocida";
+          zonaResultado.appendChild(crear("p", "",
+            "Copia de " + copia.perfil.nombre + " (" + fechaCopia + ") con " + copia.entrenamientos.length + " entrenamientos."));
+
+          const botonImportar = crear("button", "boton-principal finalizar", "Sustituir mis datos por esta copia");
+          const aviso = crear("p", "gris", "");
+          let pendiente = false;
+          botonImportar.addEventListener("click", function () {
+            if (!pendiente) {
+              pendiente = true;
+              botonImportar.textContent = "Sí, sustituir";
+              aviso.textContent = "Pulsa otra vez para confirmar. Los datos actuales se reemplazarán.";
+              setTimeout(function () { pendiente = false; botonImportar.textContent = "Sustituir mis datos por esta copia"; aviso.textContent = ""; }, 5000);
+              return;
+            }
+            datos = copia;
+            if (!datos.pesos) datos.pesos = [];
+            if (datos.sesionActual === undefined) datos.sesionActual = null;
+            guardar();
+            mostrarApp();
+          });
+          zonaResultado.appendChild(botonImportar);
+          zonaResultado.appendChild(aviso);
+        };
+        lector.readAsText(archivo);
+      });
+    }
+
+    // -----------------------------------------------------
+    // AVISOS SEMANALES (peso y copia) al abrir la app
+    // -----------------------------------------------------
+    function mostrarAvisosSemanales() {
+      if (!datos.pospuestos) datos.pospuestos = { peso: "", copia: "" };
+      const hoy = fechaHoyTexto();
+
+      // --- Peso ---
+      const ultimoPeso = datos.pesos[datos.pesos.length - 1];
+      const diasPeso = ultimoPeso ? diasDesde(new Date(ultimoPeso.fecha + "T00:00:00").getTime()) : 999;
+      if (diasPeso >= 7 && datos.pospuestos.peso !== hoy) {
+        const tarjeta = crear("div", "tarjeta aviso-semanal");
+        tarjeta.appendChild(crear("h2", "", "⚖️ ¿Cuánto pesas hoy?"));
+        tarjeta.appendChild(crear("p", "gris", "Hace " + diasPeso + " días de tu último peso. Actualízalo para ver tu progreso."));
+        const zona = crear("div", "zona-anadir");
+        const input = crear("input");
+        input.inputMode = "decimal";
+        input.placeholder = ultimoPeso ? String(ultimoPeso.kg).replace(".", ",") : "75";
+        const guardarPeso = crear("button", "", "Guardar");
+        guardarPeso.style.gridColumn = "auto";
+        const aviso = crear("p", "aviso", "");
+        guardarPeso.addEventListener("click", function () {
+          const kg = leerNumero(input.value);
+          if (kg < 30 || kg > 300) { aviso.textContent = "Escribe un peso entre 30 y 300 kg"; return; }
+          actualizarPeso(kg);
+          tarjeta.remove();
+        });
+        const ahoraNo = crear("button", "boton-pequeno", "Ahora no");
+        ahoraNo.addEventListener("click", function () { datos.pospuestos.peso = hoy; guardar(); tarjeta.remove(); });
+        zona.appendChild(input);
+        zona.appendChild(guardarPeso);
+        tarjeta.appendChild(zona);
+        tarjeta.appendChild(aviso);
+        tarjeta.appendChild(ahoraNo);
+        pantalla.appendChild(tarjeta);
+      }
+
+      // --- Copia ---
+      const necesitaCopia = datos.ultimaCopia
+        ? diasDesde(datos.ultimaCopia) >= 7
+        : datos.entrenamientos.length > 0;
+      if (necesitaCopia && datos.pospuestos.copia !== hoy) {
+        const tarjeta = crear("div", "tarjeta aviso-semanal");
+        tarjeta.appendChild(crear("h2", "", "☁️ Haz tu copia de seguridad"));
+        tarjeta.appendChild(crear("p", "gris", datos.ultimaCopia
+          ? "Hace " + diasDesde(datos.ultimaCopia) + " días de tu última copia."
+          : "Aún no has hecho ninguna copia de tus entrenamientos."));
+        const mensaje = crear("p", "gris", "");
+        const hacer = crear("button", "boton-principal", "Hacer copia ahora");
+        hacer.addEventListener("click", async function () {
+          const hecho = await exportarCopia(mensaje);
+          if (hecho) setTimeout(function () { tarjeta.remove(); }, 2500);
+        });
+        const ahoraNo = crear("button", "boton-pequeno", "Ahora no");
+        ahoraNo.addEventListener("click", function () { datos.pospuestos.copia = hoy; guardar(); tarjeta.remove(); });
+        tarjeta.appendChild(hacer);
+        tarjeta.appendChild(mensaje);
+        tarjeta.appendChild(ahoraNo);
+        pantalla.appendChild(tarjeta);
+      }
+    }
+
+    // -----------------------------------------------------
+    // 7. PANTALLA RUTINA (configurar la semana)
+    // -----------------------------------------------------
+    function pantallaRutina() {
+      pantalla.innerHTML = "";
+      pantalla.appendChild(crear("h1", "", "Tu rutina semanal"));
+      pantalla.appendChild(crear("p", "gris", "Los cambios se guardan solos."));
+      for (const dia of DIAS) {
+        pantalla.appendChild(tarjetaDia(dia));
+      }
+    }
+
+    // Vuelve a dibujar solo la tarjeta de un día (sin mover la pantalla)
+    function redibujarDia(dia) {
+      const vieja = document.getElementById("dia-" + dia);
+      vieja.replaceWith(tarjetaDia(dia));
+    }
+
+    function tarjetaDia(dia) {
+      const datosDia = datos.rutina[dia];
+      const tarjeta = crear("div", "tarjeta");
+      tarjeta.id = "dia-" + dia;
+
+      // Cabecera: nombre del día + interruptor Entreno / Descanso
+      const cabecera = crear("div", "cabecera-dia");
+      cabecera.appendChild(crear("h2", "", NOMBRES_DIAS[DIAS.indexOf(dia)]));
+      const interruptor = crear("div", "interruptor");
+      const bEntreno = crear("button", datosDia.descanso ? "" : "elegido", "Entreno");
+      const bDescanso = crear("button", datosDia.descanso ? "elegido descanso" : "", "Descanso");
+      bEntreno.addEventListener("click", function () { datosDia.descanso = false; guardar(); redibujarDia(dia); });
+      bDescanso.addEventListener("click", function () { datosDia.descanso = true; guardar(); redibujarDia(dia); });
+      interruptor.appendChild(bEntreno);
+      interruptor.appendChild(bDescanso);
+      cabecera.appendChild(interruptor);
+      tarjeta.appendChild(cabecera);
+
+      if (datosDia.descanso) return tarjeta;   // un día de descanso no necesita más
+
+      // Nombre del día de entreno (ej. "Pecho y tríceps")
+      const inputNombre = crear("input");
+      inputNombre.placeholder = "Nombre, por ejemplo Pecho y tríceps";
+      inputNombre.value = datosDia.nombre;
+      inputNombre.style.marginTop = "10px";
+      inputNombre.addEventListener("input", function () { datosDia.nombre = inputNombre.value; guardar(); });
+      tarjeta.appendChild(inputNombre);
+
+      // Lista de ejercicios del día
+      if (datosDia.ejercicios.length > 0) {
+        const titulos = crear("div", "fila-ejercicio titulos-columnas");
+        titulos.appendChild(crear("span", "", "Ejercicio"));
+        titulos.appendChild(crear("span", "", "Series"));
+        titulos.appendChild(crear("span", "", "Reps / s"));
+        titulos.appendChild(crear("span", "", ""));
+        tarjeta.appendChild(titulos);
+      }
+
+      datosDia.ejercicios.forEach(function (ej, posicion) {
+        const fila = crear("div", "fila-ejercicio");
+        fila.appendChild(crear("span", "", ej.nombre + (esDeTiempo(ej.nombre) ? " (segundos)" : "")));
+
+        const inputSeries = crear("input");
+        inputSeries.type = "number"; inputSeries.inputMode = "numeric"; inputSeries.value = ej.series;
+        inputSeries.addEventListener("input", function () { ej.series = parseInt(inputSeries.value) || 0; guardar(); });
+
+        const inputReps = crear("input");
+        inputReps.type = "number"; inputReps.inputMode = "numeric"; inputReps.value = ej.repeticiones;
+        inputReps.addEventListener("input", function () { ej.repeticiones = parseInt(inputReps.value) || 0; guardar(); });
+
+        const quitar = crear("button", "quitar", "✕");
+        quitar.setAttribute("aria-label", "Quitar " + ej.nombre);
+        quitar.addEventListener("click", function () {
+          datosDia.ejercicios.splice(posicion, 1);   // lo sacamos de la lista
+          guardar(); redibujarDia(dia);
+        });
+
+        fila.appendChild(inputSeries);
+        fila.appendChild(inputReps);
+        fila.appendChild(quitar);
+        tarjeta.appendChild(fila);
+      });
+
+      // Zona para añadir un ejercicio: primero grupo, luego ejercicio
+      const zona = crear("div", "zona-anadir");
+      const selectGrupo = crear("select");
+      for (const grupo of Object.keys(CATALOGO)) {
+        selectGrupo.appendChild(crear("option", "", grupo));
+      }
+      const selectEjercicio = crear("select");
+      function rellenarEjercicios() {
+        selectEjercicio.innerHTML = "";
+        for (const nombre of CATALOGO[selectGrupo.value]) {
+          selectEjercicio.appendChild(crear("option", "", nombre));
+        }
+      }
+      rellenarEjercicios();
+      selectGrupo.addEventListener("change", rellenarEjercicios);
+
+      const aviso = crear("p", "aviso", "");
+      const botonAnadir = crear("button", "", "+ Añadir ejercicio");
+      botonAnadir.addEventListener("click", function () {
+        const nombre = selectEjercicio.value;
+        const yaEsta = datosDia.ejercicios.some(function (e) { return e.nombre === nombre; });
+        if (yaEsta) { aviso.textContent = nombre + " ya está en este día"; return; }
+        datosDia.ejercicios.push({
+          nombre: nombre,
+          series: 3,
+          repeticiones: esDeTiempo(nombre) ? 30 : 10   // 30 segundos o 10 repeticiones
+        });
+        guardar(); redibujarDia(dia);
+      });
+
+      zona.appendChild(selectGrupo);
+      zona.appendChild(selectEjercicio);
+      zona.appendChild(botonAnadir);
+      tarjeta.appendChild(zona);
+      tarjeta.appendChild(aviso);
+      return tarjeta;
+    }
+
+    // -----------------------------------------------------
+    // 8. ARRANQUE: ¿es la primera vez?
+    // -----------------------------------------------------
+    if (datos.perfil === null) {
+      mostrarBienvenida();
+    } else {
+      mostrarApp();
+    }
+  </script>
+</body>
+</html>
